@@ -3,14 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Rainbow Dodge</title>
+  <title>Color Catch</title>
   <style>
     :root {
-      color-scheme: dark;
       --bg-1: #0b0f14;
       --bg-2: #111827;
-      --blur: 18px;
-      --opacity: 0.62;
+      --panel: rgba(2,6,12,0.55);
+      --panel-border: rgba(148,163,184,0.18);
+      --text: #e5e7eb;
+      --muted: #cbd5e1;
     }
 
     html, body {
@@ -19,85 +20,54 @@
     }
 
     body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      color: var(--text);
       background:
         radial-gradient(1200px 800px at 20% 10%, #0f172a 0%, #0b1220 35%, #060a12 65%, #03060b 100%),
         linear-gradient(180deg, var(--bg-1), var(--bg-2));
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
-      color: #e5e7eb;
       overflow: hidden;
     }
 
-    /* Animated rainbow background */
-    .bg {
-      position: fixed;
-      inset: 0;
-      overflow: hidden;
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    .orb {
-      position: absolute;
-      left: var(--x);
-      top: var(--y);
-      width: var(--size);
-      height: var(--size);
-      animation: spin var(--spin, 36s) linear infinite;
-      will-change: transform;
-    }
-
-    .dot {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background:
-        conic-gradient(
-          from 0deg at 50% 50%,
-          #ff0059 0deg,
-          #ff7a00 60deg,
-          #ffd400 120deg,
-          #00e05a 180deg,
-          #00c8ff 240deg,
-          #6a00ff 300deg,
-          #ff0059 360deg
-        );
-      filter: blur(var(--blur)) saturate(120%);
-      opacity: var(--opacity);
-      mix-blend-mode: screen;
-      animation: float var(--dur, 14s) ease-in-out infinite alternate;
-      will-change: transform;
-      transform: translate3d(0,0,0);
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes float {
-      to { transform: translate(var(--dx, 6vw), var(--dy, 8vh)) scale(var(--scale, 1.12)); }
-    }
-
-    .o1  { --size: 38vmin; --x: 6%;   --y: 8%;   --dx: 14vw; --dy: 10vh; --scale: 1.10; --dur: 12s; --spin: 44s; }
-    .o2  { --size: 26vmin; --x: 22%;  --y: 12%;  --dx: 6vw;  --dy: -6vh; --scale: 1.18; --dur: 10s; --spin: 32s; }
-    .o3  { --size: 48vmin; --x: 68%;  --y: 6%;   --dx: -10vw;--dy: 12vh; --scale: 1.06; --dur: 16s; --spin: 52s; }
-    .o4  { --size: 32vmin; --x: 78%;  --y: 24%;  --dx: -8vw; --dy: -8vh; --scale: 1.20; --dur: 11s; --spin: 28s; }
-    .o5  { --size: 44vmin; --x: 10%;  --y: 58%;  --dx: 12vw; --dy: -10vh;--scale: 1.08; --dur: 18s; --spin: 60s; }
-    .o6  { --size: 22vmin; --x: 28%;  --y: 76%;  --dx: 4vw;  --dy: -8vh; --scale: 1.24; --dur: 9s;  --spin: 22s; }
-    .o7  { --size: 52vmin; --x: 60%;  --y: 62%;  --dx: -14vw;--dy: 8vh;  --scale: 1.05; --dur: 20s; --spin: 72s; }
-    .o8  { --size: 28vmin; --x: 80%;  --y: 70%;  --dx: -6vw; --dy: -6vh; --scale: 1.16; --dur: 12s; --spin: 36s; }
-    .o9  { --size: 20vmin; --x: 42%;  --y: 36%;  --dx: 6vw;  --dy: 5vh;  --scale: 1.22; --dur: 8s;  --spin: 18s; }
-    .o10 { --size: 34vmin; --x: 48%;  --y: 78%;  --dx: -8vw; --dy: -7vh; --scale: 1.12; --dur: 13s; --spin: 30s; }
-    .o11 { --size: 30vmin; --x: 2%;   --y: 82%;  --dx: 10vw; --dy: -6vh; --scale: 1.14; --dur: 15s; --spin: 40s; }
-    .o12 { --size: 40vmin; --x: 86%;  --y: 46%;  --dx: -10vw;--dy: 10vh; --scale: 1.09; --dur: 17s; --spin: 66s; }
-
-    /* Game layer */
     #hud {
       position: fixed;
       top: 12px;
       left: 12px;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       z-index: 2;
-      font-weight: 600;
-      color: #f8fafc;
       text-shadow: 0 2px 8px rgba(0,0,0,0.6);
       user-select: none;
       pointer-events: none;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    #hud .group {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+    }
+
+    #hud .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(148,163,184,0.15);
+      border: 1px solid rgba(148,163,184,0.25);
+      pointer-events: auto;
+    }
+
+    .color-chip {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.6);
+      box-shadow: 0 0 10px rgba(255,255,255,0.2) inset;
     }
 
     #game {
@@ -106,8 +76,8 @@
       width: 100vw;
       height: 100vh;
       z-index: 1;
-      cursor: crosshair;
       touch-action: none;
+      cursor: pointer;
     }
 
     .overlay {
@@ -120,14 +90,14 @@
     }
 
     .panel {
-      background: rgba(2,6,12,0.55);
-      border: 1px solid rgba(148,163,184,0.18);
-      border-radius: 14px;
-      padding: 16px 20px;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 18px 20px;
       backdrop-filter: blur(10px);
       box-shadow: 0 20px 60px rgba(0,0,0,0.45);
       text-align: center;
-      max-width: 90vw;
+      max-width: 92vw;
       pointer-events: auto;
     }
 
@@ -138,7 +108,7 @@
 
     .panel p {
       margin: 6px 0;
-      color: #cbd5e1;
+      color: var(--muted);
     }
 
     .panel kbd {
@@ -149,48 +119,51 @@
       font-weight: 700;
     }
 
-    @media (prefers-reduced-motion: reduce) {
-      .orb, .dot { animation: none !important; }
-    }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
-  <!-- Decorative animated background -->
-  <div class="bg" aria-hidden="true">
-    <div class="orb o1"><div class="dot"></div></div>
-    <div class="orb o2"><div class="dot"></div></div>
-    <div class="orb o3"><div class="dot"></div></div>
-    <div class="orb o4"><div class="dot"></div></div>
-    <div class="orb o5"><div class="dot"></div></div>
-    <div class="orb o6"><div class="dot"></div></div>
-    <div class="orb o7"><div class="dot"></div></div>
-    <div class="orb o8"><div class="dot"></div></div>
-    <div class="orb o9"><div class="dot"></div></div>
-    <div class="orb o10"><div class="dot"></div></div>
-    <div class="orb o11"><div class="dot"></div></div>
-    <div class="orb o12"><div class="dot"></div></div>
-  </div>
-
-  <!-- Game HUD and canvas -->
-  <div id="hud">Score: <span id="score">0.0</span></div>
-  <canvas id="game"></canvas>
-
-  <!-- Overlays -->
-  <div id="startOverlay" class="overlay">
-    <div class="panel">
-      <h1>Rainbow Dodge</h1>
-      <p>Survive as long as you can. Dodge the rainbow circles.</p>
-      <p><kbd>WASD</kbd> / <kbd>Arrows</kbd> to move · <kbd>Space</kbd> to start/pause</p>
-      <p>On mobile: tap and drag to move</p>
-      <p style="opacity:.8;margin-top:8px;">Click or press Space to begin</p>
+  <div id="hud">
+    <div class="group">
+      <span class="badge">Score: <span id="score" style="margin-left:6px;">0</span></span>
+      <span class="badge">Best: <span id="best" style="margin-left:6px;">0</span></span>
+    </div>
+    <div class="group">
+      <span class="badge">
+        Lives:
+        <span id="lives" style="margin-left:6px;">❤❤❤</span>
+      </span>
+      <span class="badge">
+        Your color:
+        <span id="chip" class="color-chip"></span>
+      </span>
     </div>
   </div>
 
-  <div id="gameOverOverlay" class="overlay" style="display:none;">
+  <canvas id="game"></canvas>
+
+  <div id="startOverlay" class="overlay">
+    <div class="panel">
+      <h1>Color Catch</h1>
+      <p>Catch blocks that match your color. Wrong color loses a life.</p>
+      <p><kbd>← →</kbd> or <kbd>A D</kbd> to move · <kbd>Space</kbd> to start/pause</p>
+      <p>Mobile: tap or drag to move</p>
+      <p style="opacity:.85;margin-top:8px;">Click or press Space to begin</p>
+    </div>
+  </div>
+
+  <div id="pauseOverlay" class="overlay hidden">
+    <div class="panel">
+      <h1>Paused</h1>
+      <p>Press <kbd>Space</kbd> or click to resume</p>
+    </div>
+  </div>
+
+  <div id="overOverlay" class="overlay hidden">
     <div class="panel">
       <h1>Game Over</h1>
-      <p>Your score: <span id="finalScore">0.0</span></p>
-      <p style="opacity:.85;">Click or press Space to retry</p>
+      <p>Your score: <span id="finalScore">0</span></p>
+      <p style="opacity:.85;">Press <kbd>Space</kbd> or click to play again</p>
     </div>
   </div>
 
@@ -199,12 +172,15 @@
       const canvas = document.getElementById('game');
       const ctx = canvas.getContext('2d', { alpha: true });
       const scoreEl = document.getElementById('score');
+      const bestEl = document.getElementById('best');
+      const livesEl = document.getElementById('lives');
+      const chipEl = document.getElementById('chip');
       const startOverlay = document.getElementById('startOverlay');
-      const gameOverOverlay = document.getElementById('gameOverOverlay');
+      const pauseOverlay = document.getElementById('pauseOverlay');
+      const overOverlay = document.getElementById('overOverlay');
       const finalScoreEl = document.getElementById('finalScore');
 
       let W = 0, H = 0, dpi = Math.min(2, window.devicePixelRatio || 1);
-
       function resize() {
         W = canvas.clientWidth;
         H = canvas.clientHeight;
@@ -212,257 +188,304 @@
         canvas.height = Math.floor(H * dpi);
         ctx.setTransform(dpi, 0, 0, dpi, 0, 0);
       }
-      window.addEventListener('resize', resize, { passive: true });
-      resize();
+      // Size canvas to viewport
+      const resizeObserver = new ResizeObserver(resize);
+      resizeObserver.observe(document.body);
 
-      // Game state
-      const keys = new Set();
-      let pointerActive = false;
-      let pointerX = 0, pointerY = 0;
+      // Colors
+      const COLORS = ['#ff4757', '#1e90ff', '#2ed573', '#ffa502', '#a66bff'];
+      function randColor() { return COLORS[Math.floor(Math.random() * COLORS.length)]; }
+
+      // State
+      let running = false;
+      let paused = false;
+      let over = false;
+
+      let score = 0;
+      let best = Number(localStorage.getItem('colorCatchBest') || 0);
+      bestEl.textContent = String(best);
+
+      let lives = 3;
+      const maxLives = 5;
 
       const player = {
-        x: W / 2,
-        y: H / 2,
-        r: 12,
-        speed: 260, // px/s
-        color: '#ffffff'
+        w: 90, h: 18,
+        x: 0, y: 0,
+        vx: 0,
+        speed: 520,
+        color: randColor()
       };
 
-      const orbs = [];
-      let running = false;
-      let gameOver = false;
-      let lastTime = 0;
-      let timeSurvived = 0;
+      const blocks = [];
       let spawnTimer = 0;
+      let time = 0;
 
       // Input
+      const keys = new Set();
+      let pointerActive = false, pointerX = 0;
+
       window.addEventListener('keydown', (e) => {
-        if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
-        if (e.key === ' ') {
-          if (!running && !gameOver) start();
-          else if (running) pause();
-          else if (gameOver) restart();
-        }
-        if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') keys.add('up');
-        if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') keys.add('down');
+        if (['ArrowLeft','ArrowRight',' ','a','A','d','D'].includes(e.key)) e.preventDefault();
+        if (e.key === ' ') togglePauseOrStart();
         if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.add('left');
         if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.add('right');
       });
-
       window.addEventListener('keyup', (e) => {
-        if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') keys.delete('up');
-        if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') keys.delete('down');
         if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.delete('left');
         if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.delete('right');
       });
 
-      // Pointer / touch
       function setPointer(e) {
         const rect = canvas.getBoundingClientRect();
         const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-        const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
         pointerX = Math.max(0, Math.min(W, x));
-        pointerY = Math.max(0, Math.min(H, y));
       }
-      canvas.addEventListener('pointerdown', (e) => { setPointer(e); pointerActive = true; canvas.setPointerCapture(e.pointerId); if (!running && !gameOver) start(); });
+      canvas.addEventListener('pointerdown', (e) => {
+        setPointer(e);
+        pointerActive = true;
+        canvas.setPointerCapture(e.pointerId);
+        if (!running || paused || over) togglePauseOrStart(true);
+      });
       canvas.addEventListener('pointermove', (e) => { if (pointerActive) setPointer(e); });
       canvas.addEventListener('pointerup', () => { pointerActive = false; });
       canvas.addEventListener('pointercancel', () => { pointerActive = false; });
+      startOverlay.addEventListener('click', () => togglePauseOrStart(true));
+      pauseOverlay.addEventListener('click', () => togglePauseOrStart(true));
+      overOverlay.addEventListener('click', () => togglePauseOrStart(true));
 
-      // Helpers
-      function rand(min, max) { return Math.random() * (max - min) + min; }
-
-      // Spawn orbs from edges moving inward
-      function spawnOrb() {
-        const edge = Math.floor(rand(0, 4)); // 0: left, 1: top, 2: right, 3: bottom
-        const speed = rand(80, 220) + Math.min(220, timeSurvived * 6);
-        const r = rand(10, 28);
-        const hue = Math.floor(rand(0, 360));
-        let x, y, vx, vy;
-
-        if (edge === 0) { x = -r - 10; y = rand(0, H); vx = speed; vy = rand(-60, 60); }
-        else if (edge === 2) { x = W + r + 10; y = rand(0, H); vx = -speed; vy = rand(-60, 60); }
-        else if (edge === 1) { x = rand(0, W); y = -r - 10; vx = rand(-60, 60); vy = speed; }
-        else { x = rand(0, W); y = H + r + 10; vx = rand(-60, 60); vy = -speed; }
-
-        orbs.push({ x, y, r, vx, vy, hue, life: 0 });
+      function togglePauseOrStart(forceStart = false) {
+        if (!running || over || forceStart) {
+          startGame();
+          return;
+        }
+        paused = !paused;
+        pauseOverlay.classList.toggle('hidden', !paused);
       }
 
-      function reset() {
-        player.x = W / 2;
-        player.y = H / 2;
-        timeSurvived = 0;
+      // Game control
+      function resetGame() {
+        score = 0;
+        lives = 3;
+        time = 0;
         spawnTimer = 0;
-        orbs.length = 0;
-        gameOver = false;
-        scoreEl.textContent = '0.0';
+        blocks.length = 0;
+        player.color = randColor();
+        chipEl.style.background = player.color;
+        player.x = (W - player.w) / 2;
+        player.y = H - player.h - 24;
+        updateHUD();
       }
 
-      function start() {
-        if (running) return;
-        startOverlay.style.display = 'none';
-        gameOverOverlay.style.display = 'none';
+      function startGame() {
+        over = false;
+        paused = false;
         running = true;
-        lastTime = performance.now();
+        startOverlay.classList.add('hidden');
+        pauseOverlay.classList.add('hidden');
+        overOverlay.classList.add('hidden');
+        lastT = performance.now();
+        if (blocks.length === 0) resetGame();
         requestAnimationFrame(loop);
       }
 
-      function pause() {
+      function gameOver() {
+        over = true;
         running = false;
-        startOverlay.style.display = 'grid';
+        finalScoreEl.textContent = String(score);
+        if (score > best) {
+          best = score;
+          localStorage.setItem('colorCatchBest', String(best));
+          bestEl.textContent = String(best);
+        }
+        overOverlay.classList.remove('hidden');
       }
 
-      function end() {
-        running = false;
-        gameOver = true;
-        finalScoreEl.textContent = scoreEl.textContent;
-        gameOverOverlay.style.display = 'grid';
+      // HUD
+      function updateHUD() {
+        scoreEl.textContent = String(score);
+        livesEl.textContent = '❤'.repeat(lives) + '♡'.repeat(Math.max(0, maxLives - lives));
       }
 
-      function restart() {
-        reset();
-        start();
+      // Spawning
+      function spawnBlock() {
+        const size = 28 + Math.random() * 18;
+        const x = Math.random() * (W - size);
+        const y = -size - 4;
+        const speedBase = 140 + time * 4; // ramps over time
+        const vy = speedBase + Math.random() * 120;
+
+        // 12% rainbow bonus
+        const isRainbow = Math.random() < 0.12;
+        const color = isRainbow ? 'rainbow' : randColor();
+
+        blocks.push({ x, y, size, vy, color, rot: Math.random() * Math.PI, spin: (Math.random() - 0.5) * 1.5 });
       }
 
-      // Draw helpers
+      // Drawing
+      function drawBackground() {
+        // Subtle vignette
+        const g = ctx.createRadialGradient(W/2, H/2, Math.min(W,H)*0.2, W/2, H/2, Math.max(W,H)*0.8);
+        g.addColorStop(0, 'rgba(0,0,0,0)');
+        g.addColorStop(1, 'rgba(0,0,0,0.25)');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+      }
+
       function drawPlayer() {
-        // Ringed neon circle
-        const grad = ctx.createRadialGradient(player.x, player.y, 2, player.x, player.y, player.r * 1.6);
-        grad.addColorStop(0, 'rgba(255,255,255,1)');
-        grad.addColorStop(1, 'rgba(255,255,255,0.05)');
+        // Neon plate
+        ctx.save();
+        ctx.translate(player.x + player.w/2, player.y + player.h/2);
+        const grad = ctx.createLinearGradient(-player.w/2, 0, player.w/2, 0);
+        grad.addColorStop(0, 'rgba(255,255,255,0.9)');
+        grad.addColorStop(1, player.color);
         ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(player.x, player.y, player.r + 4, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-
-      function drawOrb(o) {
-        // Soft rainbow gradient per orb
-        const grad = ctx.createRadialGradient(o.x, o.y, 2, o.x, o.y, o.r * 1.3);
-        const c1 = `hsla(${o.hue}, 95%, 60%, 0.95)`;
-        const c2 = `hsla(${(o.hue + 90) % 360}, 95%, 60%, 0.6)`;
-        const c3 = `hsla(${(o.hue + 180) % 360}, 95%, 60%, 0.25)`;
-        grad.addColorStop(0, c1);
-        grad.addColorStop(0.5, c2);
-        grad.addColorStop(1, c3);
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Glow
-        ctx.shadowColor = c1;
-        ctx.shadowBlur = 20;
-        ctx.beginPath();
-        ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.shadowColor = player.color;
+        ctx.shadowBlur = 16;
+        roundRect(ctx, -player.w/2, -player.h/2, player.w, player.h, 8, true, false);
         ctx.shadowBlur = 0;
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+        roundRect(ctx, -player.w/2, -player.h/2, player.w, player.h, 8, false, true);
+        ctx.restore();
       }
 
-      function clamp(v, min, max) { return v < min ? min : v > max ? max : v; }
+      function drawBlock(b) {
+        ctx.save();
+        ctx.translate(b.x + b.size/2, b.y + b.size/2);
+        ctx.rotate(b.rot);
+        if (b.color === 'rainbow') {
+          const rg = ctx.createLinearGradient(-b.size/2, 0, b.size/2, 0);
+          ['#ff0059','#ff7a00','#ffd400','#00e05a','#00c8ff','#6a00ff','#ff0059'].forEach((c,i,arr)=>{
+            rg.addColorStop(i/(arr.length-1), c);
+          });
+          ctx.fillStyle = rg;
+          ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+          ctx.lineWidth = 2;
+          roundRect(ctx, -b.size/2, -b.size/2, b.size, b.size, 6, true, true);
+          // Glow pass
+          ctx.shadowColor = '#ffffff';
+          ctx.shadowBlur = 14;
+          roundRect(ctx, -b.size/2, -b.size/2, b.size, b.size, 6, true, false);
+          ctx.shadowBlur = 0;
+        } else {
+          ctx.fillStyle = b.color;
+          ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+          ctx.lineWidth = 2;
+          roundRect(ctx, -b.size/2, -b.size/2, b.size, b.size, 6, true, true);
+        }
+        ctx.restore();
+      }
 
-      // Main loop
-      function loop(now) {
+      function roundRect(ctx, x, y, w, h, r, fill, stroke) {
+        const rr = Math.min(r, w/2, h/2);
+        ctx.beginPath();
+        ctx.moveTo(x+rr, y);
+        ctx.arcTo(x+w, y, x+w, y+h, rr);
+        ctx.arcTo(x+w, y+h, x, y+h, rr);
+        ctx.arcTo(x, y+h, x, y, rr);
+        ctx.arcTo(x, y, x+w, y, rr);
+        ctx.closePath();
+        if (fill) ctx.fill();
+        if (stroke) ctx.stroke();
+      }
+
+      // Loop
+      let lastT = 0;
+      function loop(t) {
         if (!running) return;
-        const dt = Math.min(0.033, (now - lastTime) / 1000); // cap delta
-        lastTime = now;
+        const dt = Math.min(0.033, (t - lastT) / 1000 || 0);
+        lastT = t;
 
-        // Update difficulty and spawn rate
-        timeSurvived += dt;
-        scoreEl.textContent = timeSurvived.toFixed(1);
-        const spawnInterval = clamp(0.9 - timeSurvived * 0.02, 0.18, 0.9);
-        spawnTimer += dt;
-        if (spawnTimer >= spawnInterval) {
-          spawnTimer = 0;
-          spawnOrb();
-          if (timeSurvived > 25 && Math.random() < 0.35) spawnOrb();
-        }
-
-        // Movement input
-        let ax = 0, ay = 0;
-        if (keys.has('left')) ax -= 1;
-        if (keys.has('right')) ax += 1;
-        if (keys.has('up')) ay -= 1;
-        if (keys.has('down')) ay += 1;
-
-        if (pointerActive) {
-          // Smoothly move towards pointer
-          const dx = pointerX - player.x;
-          const dy = pointerY - player.y;
-          const dist = Math.hypot(dx, dy) || 1;
-          ax = dx / dist;
-          ay = dy / dist;
-        }
-
-        // Normalize
-        if (ax !== 0 || ay !== 0) {
-          const inv = 1 / Math.hypot(ax, ay);
-          ax *= inv;
-          ay *= inv;
-          player.x += ax * player.speed * dt;
-          player.y += ay * player.speed * dt;
-        }
-
-        // Bounds
-        player.x = clamp(player.x, player.r + 2, W - player.r - 2);
-        player.y = clamp(player.y, player.r + 2, H - player.r - 2);
-
-        // Update orbs
-        for (let i = orbs.length - 1; i >= 0; i--) {
-          const o = orbs[i];
-          o.x += o.vx * dt;
-          o.y += o.vy * dt;
-          o.life += dt;
-          // slight hue shift for shimmer
-          o.hue = (o.hue + 20 * dt) % 360;
-
-          // Cull if far off-screen
-          if (o.x < -o.r - 80 || o.x > W + o.r + 80 || o.y < -o.r - 80 || o.y > H + o.r + 80) {
-            orbs.splice(i, 1);
-            continue;
+        if (!paused) {
+          time += dt;
+          spawnTimer += dt;
+          const spawnInterval = clamp(0.95 - time * 0.02, 0.2, 0.95);
+          if (spawnTimer >= spawnInterval) {
+            spawnTimer = 0;
+            spawnBlock();
+            if (time > 25 && Math.random() < 0.3) spawnBlock();
           }
 
-          // Collision
-          const dx = o.x - player.x;
-          const dy = o.y - player.y;
-          const rr = (o.r + player.r) * (o.r + player.r);
-          if (dx * dx + dy * dy < rr) {
-            end();
-            break;
+          // Input movement
+          let dir = 0;
+          if (keys.has('left')) dir -= 1;
+          if (keys.has('right')) dir += 1;
+
+          if (pointerActive) {
+            // Lerp towards pointer X
+            const target = clamp(pointerX - player.w/2, 0, W - player.w);
+            player.x += (target - player.x) * Math.min(1, 12 * dt);
+          } else {
+            player.x += dir * player.speed * dt;
+          }
+          player.x = clamp(player.x, 0, W - player.w);
+          player.y = H - player.h - 24;
+
+          // Update blocks
+          for (let i = blocks.length - 1; i >= 0; i--) {
+            const b = blocks[i];
+            b.y += b.vy * dt;
+            b.rot += b.spin * dt;
+
+            // Collision with player (AABB)
+            if (rectsOverlap(player.x, player.y, player.w, player.h, b.x, b.y, b.size, b.size)) {
+              // Catch logic
+              if (b.color === 'rainbow') {
+                // Bonus: +3 points, and +1 life if not full
+                score += 3;
+                if (lives < maxLives) lives += 1;
+              } else if (colorsEqual(b.color, player.color)) {
+                score += 1;
+              } else {
+                lives -= 1;
+                if (lives <= 0) {
+                  updateHUD();
+                  gameOver();
+                  break;
+                }
+              }
+              blocks.splice(i, 1);
+              updateHUD();
+              continue;
+            }
+
+            // Remove if off-screen
+            if (b.y > H + b.size) {
+              blocks.splice(i, 1);
+            }
           }
         }
 
         // Render
         ctx.clearRect(0, 0, W, H);
-
-        // Optional subtle vignette
-        const g = ctx.createRadialGradient(W/2, H/2, Math.min(W,H)*0.2, W/2, H/2, Math.max(W,H)*0.7);
-        g.addColorStop(0, 'rgba(0,0,0,0)');
-        g.addColorStop(1, 'rgba(0,0,0,0.25)');
-        ctx.fillStyle = g;
-        ctx.fillRect(0, 0, W, H);
-
-        // Draw orbs
-        orbs.forEach(drawOrb);
-
-        // Draw player on top
+        drawBackground();
+        blocks.forEach(drawBlock);
         drawPlayer();
 
-        requestAnimationFrame(loop);
+        if (running) requestAnimationFrame(loop);
       }
 
-      // Click to start/restart
-      startOverlay.addEventListener('click', start);
-      gameOverOverlay.addEventListener('click', restart);
+      // Utils
+      function clamp(v, min, max) { return v < min ? min : v > max ? max : v; }
+      function rectsOverlap(x1,y1,w1,h1,x2,y2,w2,h2) {
+        return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
+      }
+      function colorsEqual(a,b){ return a.toLowerCase() === b.toLowerCase(); }
 
       // Initialize
-      reset();
+      function init() {
+        resize();
+        resetGame();
+      }
+      init();
+
+      // Pause on tab hide
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden && running && !over) {
+          paused = true;
+          pauseOverlay.classList.remove('hidden');
+        }
+      });
     })();
   </script>
 </body>
